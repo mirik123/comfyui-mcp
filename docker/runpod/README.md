@@ -17,7 +17,7 @@ active image has been redesigned around RunPod's official ComfyUI base.
 
 ## Persistent storage
 
-The official RunPod `/start.sh` copies the image seed from `/opt/comfyui-baked`
+The **pinned RunPod 1.4.1** `/start.sh` copies the image seed from `/opt/comfyui-baked`
 into **`/workspace/runpod-slim/ComfyUI`** and creates the persistent Python
 environment there on first boot. This image also creates
 `/workspace/ComfyUI` as a symlink to the same directory.
@@ -53,6 +53,7 @@ From the repository root:
 
 ~~~bash
 python3 docker/runpod/validate_sources.py
+python3 docker/runpod/validate_base_start.py
 docker build -t mirik123/comfyui-mcp-runpod:comfy042-cu130 docker/runpod
 bash docker/runpod/test_image.sh mirik123/comfyui-mcp-runpod:comfy042-cu130
 ~~~
@@ -102,3 +103,18 @@ opening unauthenticated JupyterLab.
 Static repository checks do not validate Docker runtime or CUDA kernels.
 The GitHub editing environment has no Docker daemon or GPU; real image build
 and LTX generation are not yet tested.
+
+### Existing workspace compatibility
+
+**RunPod image 1.4.1 does not automatically upgrade an existing workspace.**
+The startup guard requires the image seed marker `CUSTOM_COMFYUI_REF=v0.42.1`.
+If `/workspace/runpod-slim/ComfyUI` was populated by a previous pod/image,
+startup stops with an explanatory error rather than silently launching an older
+ComfyUI. Back up the volume and migrate the existing tree, or use a fresh volume
+for the first deployment. **Do not delete a populated volume without a backup.**
+
+The Dockerfile generates `/opt/comfyui-runtime-constraints.txt` and
+`/opt/comfyui-baked/.runpod-bundle-version` because the pinned RunPod `1.4.1`
+image does **not** supply them. The constraints preserve the base's CUDA 13
+PyTorch wheel versions. Source validation against the exact pinned upstream
+`start.sh` is provided by `docker/runpod/validate_base_start.py`.

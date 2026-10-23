@@ -927,3 +927,12 @@ MIT. See [LICENSE](./LICENSE) for details.
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full, structured release history.
+
+## RunPod CUDA 13 ComfyUI 0.42.1 fork image
+
+This fork includes a custom image based on `runpod/comfyui:1.4.1-cuda13.0`,
+ComfyUI `v0.42.1`, artokun Agent Panel, and the official `Comfy-Org/comfy-mcp`
+server. It preserves the runtime under `/workspace/runpod-slim/ComfyUI`.
+JupyterLab and FileBrowser start only with explicit passwords.
+
+[Build instructions, workspace compatibility and validation](RUNPOD_CUSTOMIZATION.md).
