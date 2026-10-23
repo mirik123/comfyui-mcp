@@ -1,0 +1,30 @@
+name: RunPod CUDA13 ComfyUI 0.42.1 build and test
+
+# Intentional manual opt-in: never publish an untested GPU image.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static source checks
+        run: python3 docker/runpod/validate_sources.py
+      - name: Reclaim runner disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+          df -h
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/runpod
+          load: true
+          push: false
+          tags: comfyui-mcp-runpod:comfy042-cu130-test
+      - name: Inspect image and simulate persistent workspace
+        run: bash docker/runpod/test_image.sh comfyui-mcp-runpod:comfy042-cu130-test
