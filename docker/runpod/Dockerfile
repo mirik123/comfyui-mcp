@@ -7,6 +7,8 @@ ARG COMFYUI_REF=v0.42.1
 ARG COMFYUI_MANAGER_VERSION=4.2.2
 ARG PANEL_REF=main
 ARG PANEL_REPO=https://github.com/artokun/comfyui-mcp-panel.git
+ARG RUNPODDIRECT_BRANCH=main
+ARG RUNPODDIRECT_REPO=https://github.com/MadiatorLabs/ComfyUI-RunpodDirect.git
 
 # The 1.4.1 base DOES NOT contain /opt/comfyui-runtime-constraints.txt
 # or .runpod-bundle-version. Generate our own torch constraints from the
@@ -22,6 +24,7 @@ RUN set -eux; \
     git -C /opt/comfyui-baked fetch --depth 1 origin "$COMFYUI_REF"; \
     git -C /opt/comfyui-baked checkout --force --detach FETCH_HEAD; \
     rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-Manager; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect; \
     python3.12 -m pip install --no-cache-dir \
       -c /opt/comfyui-runtime-constraints.txt \
       --extra-index-url https://download.pytorch.org/whl/cu130 \
@@ -32,14 +35,20 @@ RUN set -eux; \
     python3.12 -c 'import torch; assert torch.version.cuda and torch.version.cuda.startswith("13."), torch.version.cuda'; \
     git clone --depth 1 --branch "$PANEL_REF" "$PANEL_REPO" \
       /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel; \
+    git clone --depth 1 --single-branch --branch "$RUNPODDIRECT_BRANCH" "$RUNPODDIRECT_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect branch --show-current)" = "$RUNPODDIRECT_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$RUNPODDIRECT_BRANCH"; \
     if [ -f /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/requirements.txt ]; then \
       python3.12 -m pip install --no-cache-dir \
         -c /opt/comfyui-runtime-constraints.txt \
         --extra-index-url https://download.pytorch.org/whl/cu130 \
         -r /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/requirements.txt; \
     fi; \
-    printf 'CUSTOM_COMFYUI_REF=%s\nCUSTOM_MANAGER_VERSION=%s\nCUSTOM_PANEL_REF=%s\n' \
-      "$COMFYUI_REF" "$COMFYUI_MANAGER_VERSION" "$PANEL_REF" \
+    python3.12 -m pip install --no-cache-dir \
+      -c /opt/comfyui-runtime-constraints.txt "aiohttp>=3.8.0"; \
+    printf 'CUSTOM_COMFYUI_REF=%s\nCUSTOM_MANAGER_VERSION=%s\nCUSTOM_PANEL_REF=%s\nCUSTOM_RUNPODDIRECT_BRANCH=%s\n' \
+      "$COMFYUI_REF" "$COMFYUI_MANAGER_VERSION" "$PANEL_REF" "$RUNPODDIRECT_BRANCH" \
       > /opt/comfyui-baked/.runpod-bundle-version
 
 # Official Comfy-Org/comfy-mcp is a separate MCP server from artokun's
@@ -61,6 +70,7 @@ COPY official_comfy_mcp.sh /usr/local/bin/comfy-mcp-runpod
 RUN chmod 755 /usr/local/bin/comfy-mcp-runpod \
  && bash -n /usr/local/bin/comfy-mcp-runpod \
  && test -s /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect/__init__.py \
  && grep -qx 'CUSTOM_COMFYUI_REF=v0.42.1' /opt/comfyui-baked/.runpod-bundle-version
 
 ENV COMFYUI_WORKSPACE=/workspace/runpod-slim/ComfyUI
