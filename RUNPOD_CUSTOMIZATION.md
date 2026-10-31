@@ -12,6 +12,7 @@ active image has been redesigned around RunPod's official ComfyUI base.
 | CUDA / Torch | CUDA 13.0 and base-supplied PyTorch; no duplicate Torch install |
 | Manager | pip `comfyui_manager==4.2.2`, `--enable-manager` |
 | Sidebar | [artokun/comfyui-mcp-panel](https://github.com/artokun/comfyui-mcp-panel) |
+| Model downloads | [ComfyUI-RunpodDirect](https://github.com/MadiatorLabs/ComfyUI-RunpodDirect), fresh tracked `main` clone baked into the image |
 | Official MCP | [Comfy-Org/comfy-mcp](https://github.com/Comfy-Org/comfy-mcp), separate stdio integration |
 | Artokun MCP | Existing Node.js application; normally runs on your PC |
 
@@ -31,6 +32,31 @@ not the system CUDA version.
 
 The official MCP environment at `/opt/comfy-mcp-venv` is baked in the Docker
 image, and is rebuilt when the image is rebuilt. It is not a second ComfyUI.
+
+### RunpodDirect Git branch tracking
+
+The base RunPod image includes RunpodDirect, but its existing Git checkout may
+lack an upstream branch. During a new image build, this fork replaces that
+checkout with an explicit clone from `MadiatorLabs/ComfyUI-RunpodDirect` branch
+`main` using `git clone --depth 1 --single-branch --branch main`. This sets
+`main` to track `origin/main`, enabling ordinary `git pull --ff-only` updates.
+
+**This only changes fresh first-boot workspaces.** An existing persistent
+`/workspace/runpod-slim/ComfyUI/custom_nodes/ComfyUI-RunpodDirect` is kept
+untouched; rebuilding the Docker image does not replace it. For such a Pod:
+
+~~~bash
+cd /workspace/runpod-slim/ComfyUI/custom_nodes/ComfyUI-RunpodDirect
+set -e
+git status --short
+git fetch origin main
+git switch main || git switch -c main --track origin/main
+git branch --set-upstream-to=origin/main main
+git pull --ff-only
+~~~
+
+Check and resolve uncommitted changes before switching; never discard them
+with a forced reset. Restart the ComfyUI process, then hard-refresh the browser.
 
 ## Services
 

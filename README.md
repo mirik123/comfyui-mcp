@@ -13,6 +13,7 @@ This is a community fork, **not an official release** of artokun's project, Comf
 | GPU runtime | CUDA 13.0; reuse PyTorch from the RunPod image |
 | ComfyUI Manager | `comfyui_manager==4.2.2`, enabled using `--enable-manager` |
 | Agent sidebar | [artokun/comfyui-mcp-panel](https://github.com/artokun/comfyui-mcp-panel) |
+| Server-side model downloads | [MadiatorLabs/ComfyUI-RunpodDirect](https://github.com/MadiatorLabs/ComfyUI-RunpodDirect), cloned from tracked `main` during the image build |
 | Official MCP server | [Comfy-Org/comfy-mcp](https://github.com/Comfy-Org/comfy-mcp), isolated Python environment |
 | Artokun MCP agent | Existing Node.js agent from upstream v0.52.206; usually runs on your own PC |
 | Persistent ComfyUI | `/workspace/runpod-slim/ComfyUI` |
@@ -50,6 +51,24 @@ The persistent installation contains ComfyUI, custom nodes, a Python virtual env
 **Existing volume warning:** The pinned RunPod `1.4.1` startup does not upgrade an existing ComfyUI checkout automatically. This fork checks a version marker and refuses to launch an incompatible existing workspace. Back up and migrate the old installation, or use a fresh persistent volume. Do not delete a populated volume without a backup.
 
 LTX model files and other model weights are **not bundled**.
+
+### RunpodDirect updates
+
+The Docker build replaces the RunPod base image's existing `ComfyUI-RunpodDirect` checkout with an explicit clone of the extension's `main` branch, tracking `origin/main`. This makes `git pull --ff-only` work in new installations. After first boot the extension lives on the persistent `/workspace` volume, and **rebuilding the image does not update an existing volume**.
+
+To repair a previously installed checkout on an existing Pod without deleting its data:
+
+~~~bash
+cd /workspace/runpod-slim/ComfyUI/custom_nodes/ComfyUI-RunpodDirect
+set -e
+git status --short               # inspect and preserve any local changes
+git fetch origin main
+git switch main || git switch -c main --track origin/main
+git branch --set-upstream-to=origin/main main
+git pull --ff-only
+~~~
+
+If Git reports uncommitted changes or diverging history, resolve them before switching or pulling; do not force-reset your working copy. Restart ComfyUI and hard-refresh the browser after updating the extension. See [RunPod customization](RUNPOD_CUSTOMIZATION.md) for persistent-volume considerations.
 
 ### Access and security
 
@@ -95,5 +114,6 @@ See [RunPod customization and validation](RUNPOD_CUSTOMIZATION.md) and [the acti
 - **ComfyUI:** [Comfy-Org / ComfyUI](https://github.com/comfyanonymous/ComfyUI) and contributors.
 - **Official Comfy MCP:** [Comfy-Org/comfy-mcp](https://github.com/Comfy-Org/comfy-mcp).
 - **RunPod ComfyUI base:** [runpod-workers/comfyui-base](https://github.com/runpod-workers/comfyui-base) and the `runpod/comfyui` Docker image.
+- **RunpodDirect:** [MadiatorLabs/ComfyUI-RunpodDirect](https://github.com/MadiatorLabs/ComfyUI-RunpodDirect), GPL-3.0 licensed, installed as a separate third-party ComfyUI extension.
 
 Third-party components retain their own licenses and attribution requirements. This fork's changes do not imply endorsement by the upstream maintainers.

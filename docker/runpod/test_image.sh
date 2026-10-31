@@ -7,6 +7,9 @@ docker run --rm --entrypoint bash "$IMAGE" -ec '
   test -s /opt/comfyui-baked/main.py
   grep -q CUSTOM_COMFYUI_REF=v0.42.1 /opt/comfyui-baked/.runpod-bundle-version
   test -s /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/__init__.py
+  test -s /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect/__init__.py
+  test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect branch --show-current)" = main
+  test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect rev-parse --abbrev-ref --symbolic-full-name "@{upstream}")" = origin/main
   test -x /opt/comfy-mcp-venv/bin/comfy-mcp
   test -x /opt/comfy-mcp-venv/bin/comfy
   bash -n /start.sh
@@ -28,6 +31,8 @@ for pass in cold warm; do
     fi
     test -s "$D/main.py"
     test -s "$D/custom_nodes/comfyui-mcp-panel/__init__.py"
+    test -s "$D/custom_nodes/ComfyUI-RunpodDirect/__init__.py"
+    test "$(git -C "$D/custom_nodes/ComfyUI-RunpodDirect" rev-parse --abbrev-ref --symbolic-full-name "@{upstream}")" = origin/main
     test -x "$D/.venv-cu128/bin/python"
     if [ -f "$D/persistent.txt" ]; then
       grep -qx survived "$D/persistent.txt"
