@@ -58,6 +58,42 @@ git pull --ff-only
 Check and resolve uncommitted changes before switching; never discard them
 with a forced reset. Restart the ComfyUI process, then hard-refresh the browser.
 
+## H3 production nodes (optional alternatives)
+
+The image includes Context Loop, H3 Extender, and H3 Latent Upscaler, plus the
+Motion Context MultiRef dependency and Mamad8 upscaler architecture. The three
+primary node packs are separate workflow options; do not wire multiple
+production controllers into one sampling graph before testing compatibility.
+
+Context Loop accepts imported Plan JSON via its Plan editor **JSON** button
+or its `plan_json_input` STRING socket. Use
+[Ref2V Studio](https://github.com/ethanfel/ComfyUI-MiniMaxH3-Context-Loop/tree/main/example_workflows)
+for scene-specific `@tags` resolved to each shot's native Picture slots.
+The JSON contains prompts and timing, **not image bytes**: import and register
+actual images in ComfyUI's Project Asset Carousel. Use the Review Gate to
+approve a scene before continuing.
+
+On a fresh Pod, the extension checkouts are copied from the image's seed into
+`/workspace/runpod-slim/ComfyUI/custom_nodes/`. Existing persistent
+workspaces are **left untouched**; installing a newer Docker image won't
+retrofit these nodes. On an existing Pod with a backed-up workspace:
+
+~~~bash
+cd /workspace/runpod-slim/ComfyUI/custom_nodes
+git clone -b main https://github.com/seitanism/ComfyUI-H3-Motion-Context-MultiRef.git
+git clone -b main https://github.com/ethanfel/ComfyUI-MiniMaxH3-Context-Loop.git
+git clone -b main https://github.com/tritant/ComfyUI_MiniMax_H3_Extender.git
+git clone -b main https://github.com/mamad8c/ComfyUI-H3-Latent-Upscaler-Mamad8.git
+git clone -b main https://github.com/Tr1dae/ComfyUI-MiniMaxH3_LatentUpscaler.git
+# Install Extender dependencies using your ComfyUI Python environment:
+# /workspace/runpod-slim/ComfyUI/.venv-cu128/bin/python -m pip install -r ComfyUI_MiniMax_H3_Extender/requirements.txt
+~~~
+
+Skip any folders already installed, update or back them up instead of cloning over.
+Restart ComfyUI and hard-refresh the browser. Verify new node names before a
+full rendering run. Some H3 plugins patch the sampling pipeline and are
+sensitive to the ComfyUI version. This change has not been GPU-tested.
+
 ## Services
 
 | Service | Port | Behavior |
