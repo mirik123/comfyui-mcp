@@ -9,6 +9,12 @@ ARG PANEL_REF=main
 ARG PANEL_REPO=https://github.com/artokun/comfyui-mcp-panel.git
 ARG RUNPODDIRECT_BRANCH=main
 ARG RUNPODDIRECT_REPO=https://github.com/MadiatorLabs/ComfyUI-RunpodDirect.git
+ARG H3_CONTEXT_LOOP_REPO=https://github.com/ethanfel/ComfyUI-MiniMaxH3-Context-Loop.git
+ARG H3_EXTENDER_REPO=https://github.com/tritant/ComfyUI_MiniMax_H3_Extender.git
+ARG H3_LATENT_UPSCALER_REPO=https://github.com/Tr1dae/ComfyUI-MiniMaxH3_LatentUpscaler.git
+ARG H3_MOTION_CONTEXT_REPO=https://github.com/seitanism/ComfyUI-H3-Motion-Context-MultiRef.git
+ARG H3_MAMAD8_UPSCALER_REPO=https://github.com/mamad8c/ComfyUI-H3-Latent-Upscaler-Mamad8.git
+ARG H3_EXTENSIONS_BRANCH=main
 
 # The 1.4.1 base DOES NOT contain /opt/comfyui-runtime-constraints.txt
 # or .runpod-bundle-version. Generate our own torch constraints from the
@@ -37,6 +43,31 @@ RUN set -eux; \
       /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel; \
     git clone --depth 1 --single-branch --branch "$RUNPODDIRECT_BRANCH" "$RUNPODDIRECT_REPO" \
       /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3-Context-Loop; \
+    git clone --depth 1 --single-branch --branch "$H3_EXTENSIONS_BRANCH" "$H3_CONTEXT_LOOP_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3-Context-Loop; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3-Context-Loop branch --show-current)" = "$H3_EXTENSIONS_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3-Context-Loop rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$H3_EXTENSIONS_BRANCH"; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender; \
+    git clone --depth 1 --single-branch --branch "$H3_EXTENSIONS_BRANCH" "$H3_EXTENDER_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender branch --show-current)" = "$H3_EXTENSIONS_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$H3_EXTENSIONS_BRANCH"; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3_LatentUpscaler; \
+    git clone --depth 1 --single-branch --branch "$H3_EXTENSIONS_BRANCH" "$H3_LATENT_UPSCALER_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3_LatentUpscaler; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3_LatentUpscaler branch --show-current)" = "$H3_EXTENSIONS_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3_LatentUpscaler rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$H3_EXTENSIONS_BRANCH"; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Motion-Context-MultiRef; \
+    git clone --depth 1 --single-branch --branch "$H3_EXTENSIONS_BRANCH" "$H3_MOTION_CONTEXT_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Motion-Context-MultiRef; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Motion-Context-MultiRef branch --show-current)" = "$H3_EXTENSIONS_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Motion-Context-MultiRef rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$H3_EXTENSIONS_BRANCH"; \
+    rm -rf /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Latent-Upscaler-Mamad8; \
+    git clone --depth 1 --single-branch --branch "$H3_EXTENSIONS_BRANCH" "$H3_MAMAD8_UPSCALER_REPO" \
+      /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Latent-Upscaler-Mamad8; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Latent-Upscaler-Mamad8 branch --show-current)" = "$H3_EXTENSIONS_BRANCH"; \
+    test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Latent-Upscaler-Mamad8 rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$H3_EXTENSIONS_BRANCH"; \
     test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect branch --show-current)" = "$RUNPODDIRECT_BRANCH"; \
     test "$(git -C /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect rev-parse --abbrev-ref --symbolic-full-name '@{upstream}')" = "origin/$RUNPODDIRECT_BRANCH"; \
     if [ -f /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/requirements.txt ]; then \
@@ -47,6 +78,9 @@ RUN set -eux; \
     fi; \
     python3.12 -m pip install --no-cache-dir \
       -c /opt/comfyui-runtime-constraints.txt "aiohttp>=3.8.0"; \
+    python3.12 -m pip install --no-cache-dir \
+      -c /opt/comfyui-runtime-constraints.txt \
+      -r /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender/requirements.txt; \
     printf 'CUSTOM_COMFYUI_REF=%s\nCUSTOM_MANAGER_VERSION=%s\nCUSTOM_PANEL_REF=%s\nCUSTOM_RUNPODDIRECT_BRANCH=%s\n' \
       "$COMFYUI_REF" "$COMFYUI_MANAGER_VERSION" "$PANEL_REF" "$RUNPODDIRECT_BRANCH" \
       > /opt/comfyui-baked/.runpod-bundle-version
@@ -71,6 +105,11 @@ RUN chmod 755 /usr/local/bin/comfy-mcp-runpod \
  && bash -n /usr/local/bin/comfy-mcp-runpod \
  && test -s /opt/comfyui-baked/custom_nodes/comfyui-mcp-panel/__init__.py \
  && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-RunpodDirect/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3-Context-Loop/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI_MiniMax_H3_Extender/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-MiniMaxH3_LatentUpscaler/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Motion-Context-MultiRef/__init__.py \
+ && test -s /opt/comfyui-baked/custom_nodes/ComfyUI-H3-Latent-Upscaler-Mamad8/__init__.py \
  && grep -qx 'CUSTOM_COMFYUI_REF=v0.42.1' /opt/comfyui-baked/.runpod-bundle-version
 
 ENV COMFYUI_WORKSPACE=/workspace/runpod-slim/ComfyUI

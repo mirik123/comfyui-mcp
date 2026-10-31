@@ -52,6 +52,19 @@ The persistent installation contains ComfyUI, custom nodes, a Python virtual env
 
 LTX model files and other model weights are **not bundled**.
 
+### H3 long-form production toolkits
+
+The image now includes three alternative H3 tools:
+
+- [Context Loop](https://github.com/ethanfel/ComfyUI-MiniMaxH3-Context-Loop): import Plan JSON (Plan's **JSON** button or `plan_json_input`), per-shot prompts, tagged scene references, review/retry and checkpoint/resume.
+- [H3 Extender](https://github.com/tritant/ComfyUI_MiniMax_H3_Extender): clip cards, per-clip references, Full Batch, project persistence.
+- [H3 Latent Upscaler](https://github.com/Tr1dae/ComfyUI-MiniMaxH3_LatentUpscaler): optional two-pass 2× latent spatial refinement; not an automatic improvement in visual quality.
+
+The image also installs Context Loop's documented [Motion Context MultiRef](https://github.com/seitanism/ComfyUI-H3-Motion-Context-MultiRef) dependency and the upscaler's [Mamad8 architecture pack](https://github.com/mamad8c/ComfyUI-H3-Latent-Upscaler-Mamad8). Each checkout follows its `main` branch, with an upstream configured for `git pull --ff-only`. H3 model weights and upscaler weights are **not baked into the image**; the upscaler's learned checkpoint may download when first used.
+
+**RunPod persistent-volume behavior:** Existing `/workspace/runpod-slim/ComfyUI` contents are not updated by a new image. Install these nodes manually on an existing Pod or migrate to a fresh ComfyUI workspace after backing up. Do not delete your existing models and project data. Avoid mixing the three long-form controllers inside the **same graph** without testing; they are alternatives, not one mandatory combined workflow. GPU inference/coexistence have not been verified.
+
+
 ### RunpodDirect updates
 
 The Docker build replaces the RunPod base image's existing `ComfyUI-RunpodDirect` checkout with an explicit clone of the extension's `main` branch, tracking `origin/main`. This makes `git pull --ff-only` work in new installations. After first boot the extension lives on the persistent `/workspace` volume, and **rebuilding the image does not update an existing volume**.
