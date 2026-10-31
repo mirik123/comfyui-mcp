@@ -11,7 +11,10 @@ for key in ("FROM runpod/comfyui:1.4.1-cuda13.0", "ARG COMFYUI_REF=v0.42.1",
             "comfyui_manager", "comfy-cli>=1.14.0",
             "comfy-mcp", "COPY patch_base_start.py",
             "ARG RUNPODDIRECT_BRANCH=main", "ComfyUI-RunpodDirect",
-            "--single-branch --branch", "origin/$RUNPODDIRECT_BRANCH"):
+            "--single-branch --branch", "origin/$RUNPODDIRECT_BRANCH",
+            "H3_CONTEXT_LOOP_REPO", "H3_EXTENDER_REPO",
+            "H3_LATENT_UPSCALER_REPO", "H3_MOTION_CONTEXT_REPO",
+            "H3_MAMAD8_UPSCALER_REPO", "ComfyUI_MiniMax_H3_Extender/requirements.txt"):
     assert key in docker, key
 for key in ("JUPYTER_PASSWORD", "FILEBROWSER_PASSWORD",
             "/workspace/ComfyUI", "--enable-manager"):
